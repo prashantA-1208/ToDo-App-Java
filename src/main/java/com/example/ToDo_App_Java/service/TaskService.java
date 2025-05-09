@@ -4,6 +4,7 @@ package com.example.todo_app_java.service;
 import com.example.todo_app_java.model.Task;
 import com.example.todo_app_java.repository.TaskRepository;
 import org.springframework.stereotype.Service;
+import com.example.todo_app_java.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,5 +41,14 @@ public class TaskService {
 
     public void deleteTask(Long taskId) {
         taskRepository.deleteById(taskId);
+    }
+
+    public Task save(Task task){
+        return taskRepository.save(task);
+    }
+    public List<Task> findByUser(User user){
+        return taskRepository.findByUser(user);
+
+        // convert to dto
     }
 }

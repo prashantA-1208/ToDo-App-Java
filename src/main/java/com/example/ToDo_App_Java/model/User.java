@@ -1,6 +1,7 @@
 package com.example.todo_app_java.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class User {
@@ -9,7 +10,11 @@ public class User {
     private Long userId;
 
     private String username;
+
+    @Column(unique = true)
     private String email;
+
+    @JsonIgnore
     private String password;
 
     // Getters and Setters

@@ -11,6 +11,18 @@ public class Task {
     private String title;
     private boolean completed;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     // Getters and Setters
     public Long getTaskId() { return taskId; }
     public void setTaskId(Long TaskID) { this.taskId = this.taskId; }
