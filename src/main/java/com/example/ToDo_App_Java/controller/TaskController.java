@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/")
@@ -31,7 +32,14 @@ public class TaskController {
     @GetMapping("tasks")
     public ResponseEntity<?> getAllTasks(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        String email = jwtService.extractUsername(token);
+        boolean valid = jwtService.validateToken(token);
+
+        if(!valid){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        String email = jwtService.extractEmail(token);
+
 
         User user = userService.getEmail(email);
         if (user == null) {
@@ -46,7 +54,13 @@ public class TaskController {
     @PostMapping("task")
     public ResponseEntity<?> createTask(@RequestBody Task task, @RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
-        String email = jwtService.extractUsername(token);
+        boolean valid = jwtService.validateToken(token);
+
+        if(!valid){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+
+        String email = jwtService.extractEmail(token);
 
         User user = userService.getEmail(email);
         if (user == null) {
@@ -58,17 +72,51 @@ public class TaskController {
         return ResponseEntity.ok(savedTask);
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task task) {
-        Task updated = taskService.updateTask(id, task);
-        if (updated != null) return ResponseEntity.ok(updated);
-        else return ResponseEntity.notFound().build();
+    @PutMapping("task/{id}")
+    public ResponseEntity<?> updateTask(@PathVariable Long id, @RequestBody Task task, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        boolean valid = jwtService.validateToken(token);
+
+        if(!valid){
+            return ResponseEntity.notFound().build();
+        }
+
+        Long userId = jwtService.extractUserId(token);
+
+        Optional<Task> optionalTask = taskService.getTaskByIdAndUserId(id, userId);
+        if (optionalTask.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Task existingTask = optionalTask.get();
+        existingTask.setTitle(task.getTitle());
+        existingTask.setCompleted(task.isCompleted());
+
+        Task saved = taskService.save(existingTask); // or taskRepository.save(existingTask)
+        return ResponseEntity.ok(saved);
+
     }
 
-    @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        taskService.deleteTask(id);
-        return ResponseEntity.noContent().build();
+    @DeleteMapping("task/{id}")
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id, @RequestHeader("Authorization") String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+        boolean valid = jwtService.validateToken(token);
+
+        if(!valid){
+            return ResponseEntity.noContent().build();
+        }
+        Long userId = jwtService.extractUserId(token);
+
+        // Check if the task exists for the user
+        Optional<Task> optionalTask = taskService.getTaskByIdAndUserId(id, userId);
+        if (optionalTask.isEmpty()) {
+            return ResponseEntity.notFound().build(); // Return 404 if task is not found for the user
+        }
+
+        // Delete the task using its ID and the user ID
+        taskService.deleteTask(id, userId);  // Pass taskId and userId to the delete method
+        return ResponseEntity.noContent().build();  // Return 204 No Content if task is successfully deleted
+
     }
 
     @PostMapping("signup")

@@ -39,16 +39,20 @@ public class TaskService {
         }).orElse(null);
     }
 
-    public void deleteTask(Long taskId) {
-        taskRepository.deleteById(taskId);
-    }
 
     public Task save(Task task){
         return taskRepository.save(task);
     }
     public List<Task> findByUser(User user){
         return taskRepository.findByUser(user);
-
-        // convert to dto
     }
+    public Optional<Task> getTaskByIdAndUserId(Long taskId, Long userId) {
+        return taskRepository.findByTaskIdAndUser_UserId(taskId, userId);
+    }
+
+    public void deleteTask(Long taskId, Long userId) {
+        // Call the repository method that deletes the task by taskId and userId
+        taskRepository.deleteByTaskIdAndUserId(taskId, userId);
+    }
+
 }
