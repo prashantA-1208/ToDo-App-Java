@@ -119,10 +119,7 @@ public class TaskController {
 
     }
 
-    @PostMapping("signup")
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
-    }
+
 
 
 }

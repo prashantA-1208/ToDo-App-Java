@@ -17,10 +17,11 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(String email, Long userId) {
+    public String generateToken(String email, Long userId, String username) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
+                .claim("username", username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
@@ -43,6 +44,11 @@ public class JwtService {
     public Long extractUserId(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("userId", Long.class);
+    }
+
+    public String extractUsername(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("username", String.class);
     }
 
 
